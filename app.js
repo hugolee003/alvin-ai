@@ -12,6 +12,11 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 
+app.use((err, req, res, next) => {
+  console.log(err.stack);
+})
+
+
 // Serve static files from the public directory
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
