@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Poppins:ital,wght@0,200;0,300;0,400;0,500;0,600;0,800;1,200;1,500&display=swap" rel="stylesheet">
+	<link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+	<link rel="stylesheet" href="./style.css">
+	<title>Alvin - Restaurant bot</title>
+</head>
+<body>
+
+    <div class="image-body">
+        <img class="alvin-ai" src="./image/119368353-34723580-bcb3-11eb-95bc-8f1c7d351fbd-removebg-preview.png" alt="alvin ai">
+        <h3 class="alvin-text">Hello, welcome to AlvinAI 👋</h3>
+        <h3 class="alvin-text">Click the blue button to start talking</h3>
+    </div>
+
+	<div class="chatbox-wrapper">
+		<div class="chatbox-toggle">
+			<i class='bx bx-message-dots'></i>
+		</div>
+		<div class="chatbox-message-wrapper">
+			<div class="chatbox-message-header">
+				<div class="chatbox-message-profile">
+					<img src="./image/TimonHiWhite.jpg" alt="" class="chatbox-message-image">
+					<div>
+						<h4 class="chatbox-message-name">Alvin</h4>
+						<p class="chatbox-message-status">online</p>
+					</div>
+				</div>
+				<div class="chatbox-message-dropdown">
+					<i class='bx bx-dots-vertical-rounded chatbox-message-dropdown-toggle'></i>
+					<ul class="chatbox-message-dropdown-menu">
+						<li>
+							<a href="https://twitter.com/hugo_lee003" target="_blank">Twitter</a>
+						</li>
+						<li>
+							<a href="https://github.com/hugolee003" target="_blank">Github</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div class="chatbox-message-content">
+				<h4 class="chatbox-message-no-message">Hello 👋, I'm Alvin - Altschool Virtual Intelligent restaurant bot.</h4>
+			</div>
+			<div class="chatbox-message-bottom">
+				<form action="#" class="chatbox-message-form">
+					<textarea rows="1" placeholder="Type message..." class="chatbox-message-input"></textarea>
+					<button type="submit" class="chatbox-message-submit"><i class='bx bx-send' ></i></button>
+				</form>
+			</div>
+		</div>
+	</div>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
+	<script src="./index.js"></script>
+</body>
+</html>
