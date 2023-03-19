@@ -1,11 +1,3 @@
-
-
-
-
-
-
-
-
 const socket = io()
 
 // MESSAGE INPUT

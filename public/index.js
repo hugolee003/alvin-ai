@@ -1,5 +1,3 @@
-const socket = io()
-
 // MESSAGE INPUT
 const textarea = document.querySelector('.chatbox-message-input')
 const chatboxForm = document.querySelector('.chatbox-message-form')
@@ -18,9 +16,7 @@ textarea.addEventListener('input', function () {
 	}
 })
 
-function handleUserInput( data ){
-	socket.emit('request', data )
-}
+
 
 // TOGGLE CHATBOX
 const chatboxToggle = document.querySelector('.chatbox-toggle')
@@ -45,6 +41,11 @@ document.addEventListener('click', function (e) {
 		dropdownMenu.classList.remove('show')
 	}
 })
+
+
+
+
+
 
 
 // CHATBOX MESSAGE
@@ -85,84 +86,19 @@ function writeMessage() {
 	scrollBottom()
 }
 
-socket.on("menu", function(data){
+function autoReply() {
 	const today = new Date()
 	let message = `
-	<div class="chatbox-message-item received">
-		<span class="chatbox-message-item-text">
-			${data}
-		</span>
-		<span class="chatbox-message-item-time">${addZero(today.getHours())}:${addZero(today.getMinutes())}</span>
-	</div>
+		<div class="chatbox-message-item received">
+			<span class="chatbox-message-item-text">
+				Thank you for your awesome support!
+			</span>
+			<span class="chatbox-message-item-time">${addZero(today.getHours())}:${addZero(today.getMinutes())}</span>
+		</div>
 	`
 	chatboxMessageWrapper.insertAdjacentHTML('beforeend', message)
 	scrollBottom()
-})
-
-// Helper function to append a message to the chat box
-function appendMessage(message, sender) {
-	const messageElement = document.createElement("div");
-	messageElement.classList.add("message-text", sender);
-	messageElement.textContent = message;
-	
-	// const timestamp = new Date().toLocaleTimeString(); // create timestamp
-	// const timestampElement = document.createElement("span"); // create span element for timestamp
-	// timestampElement.classList.add("timestamp");
-	// timestampElement.textContent = timestamp;
-	
-	// const messageContainer = document.createElement("div");
-	// messageContainer.classList.add("message-container");
-	// messageContainer.appendChild(messageElement);
-	// messageContainer.appendChild(timestampElement);
-	// chatBox.appendChild(messageContainer);
-	// chatBox.scrollTop = chatBox.scrollHeight;
-  }
-
-  // Handle sending messages
-function sendMessage() {
-	const message = inputField.value.trim();
-	if (message === "") {
-	  return;
-	}
-	appendMessage(message, "user");
-	socket.emit("user-message", message);
-	inputField.value = "";
-  }
-
-  // Handle receiving messages from the server
-socket.on("bot-message", (message) => {
-	appendMessage(message, "bot");
-  });
-
-// function autoReply() {
-// 	const today = new Date()
-// 	let message = `
-		// <div class="chatbox-message-item received">
-		// 	<span class="chatbox-message-item-text">
-		// 		Thank you for your awesome support!
-		// 	</span>
-		// 	<span class="chatbox-message-item-time">${addZero(today.getHours())}:${addZero(today.getMinutes())}</span>
-		// </div>
-// 	`
-// 	chatboxMessageWrapper.insertAdjacentHTML('beforeend', message)
-// 	scrollBottom()
-// }
-
-// socket.on('connect', () => {
-// 	console.log('We\'re ready to chat!\nWelcome to Alvin AI');
-//   });
-  
-//   socket.on('disconnect', () => {
-// 	console.log('This is bad. We\'re disconnected from the chat');
-//   });
-  
-//   socket.on('message', (message) => {
-// 	if (message.type === 'bot') {
-// 	  addBotMessage(message);
-// 	} else {
-// 	  addSelfMessage(message.text);
-// 	}
-//   });
+}
 
 function scrollBottom() {
 	chatboxMessageWrapper.scrollTo(0, chatboxMessageWrapper.scrollHeight)
@@ -174,10 +110,3 @@ function isValid(value) {
 
 	return text.length > 0
 }
-
-document.getElementById(".chatbox-message-input").addEventListener("keydown", (event) => {
-	if (event.key === "Enter") {
-	  event.preventDefault();
-	  sendMessage();
-	}
-  });
