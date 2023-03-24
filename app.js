@@ -5,16 +5,16 @@ const session = require('express-session')
 const { Server } = require("socket.io");
 const cookieParser = require('cookie-parser')
 const MongoStore = require('connect-mongodb-session')(session)
-const menu = require('./helper')
+const bot = require('./helper')
 require('dotenv').config()
 
 const app = express()
-const server = http.createServer( app )
-const io = new Server( server )
+const server = http.createServer(app)
+const io = new Server(server)
 const PORT = process.env.PORT;
 const DB = process.env.DB;
 const SECRET = process.env.SECRET;
-require("./db")( DB );
+require("./db")(DB);
 
 const store = new MongoStore({
   uri: DB,
@@ -34,36 +34,33 @@ const sessionMid = session({
 });
 
 
-app.use( sessionMid )
+app.use(sessionMid)
 app.use(cookieParser())
 app.use(cors())
 app.use(express.static("public"));
-app.get("/", ( req, res ) => {
-    res.sendFile(__dirname + "/public" + "/index.html")
-})
 
-const wrap = (midddleware) => (socket, next) =>
-  midddleware(socket.request, {}, next);
-io.use(wrap( sessionMid ))
-io.on("connection", ( socket ) => {
-    console.log("A user connected", socket.id)
+io.engine.use(sessionMid);
 
-    socket.on("request", function(data){
-      const userInput = parseInt( data )
+io.on("connection", (socket) => {
+  const request = socket.request;
+  console.log("A user connected", socket.id, request.session.id );
 
-      if (userInput === 1){
-        socket.emit("menu", menu)
-      }
-      
-
-      if (isNaN(data)){
-        socket.emit("input_error", "Please input a valid number")
-      }
-    })
+  // Send a welcome message to the user
+  socket.emit("response", "Welcome to Alvin-AI. Please select an option:\n\n1. Place an order\n99. Checkout order\n98. See order history\n97. See current order\n0. Cancel order");
+ 
 
 
+  socket.on("request", function (data) {
+    const [response, modified] = bot.getResponse(data, request.session.data, store);
+    request.session.data = modified;
+    socket.emit("response", response);
+  })
+
+  socket.on("disconnect", () => {
+    request.session.save();
+  })
 })
 
 server.listen(PORT, () => {
-    console.log(`Server is running on PORT ${ PORT }`)
+  console.log(`Server is running on PORT ${PORT}`)
 })

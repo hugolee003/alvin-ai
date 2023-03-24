@@ -1,252 +1,147 @@
-    //   // Handle sending messages
-    //   // Define state variables
-    //   let current_order = [];
-    //   let order_history = [];
-    //   let isPlacingOrder = false;
+const { store } = require("./store");
 
-    //   function sendMessage() {
-    //     const message = inputField.value;
-    //     if (message === "") {
-    //       return;
-    //     }
-    //     appendMessage(message, "user");
+/**
+ *
+ * @param {any} request - The request from the user, usually a number
+ * @param {*} data - The session data
+ * @returns
+ */
+exports.getResponse = (request, data) => {
+  if (isNaN(request)) {
+    return "Invalid request";
+  }
 
-    //     if (!isPlacingOrder) {
-    //       // User is not currently placing an order
-    //       if (message === "1") {
-    //         // User wants to start placing an order
-    //         socket.emit(
-    //           "bot-message",
-    //           "Here is a list of items you can order:\n1: Bugger\n2: Pizzer\n3: Shawarmafried Rice\n4: fried-Rice\n5: Fried Rice\n\n If not:\n 97: Current Order\n 98: Order History"
-    //         );
-    //         isPlacingOrder = true;
-    //       } else if (message === "98") {
-    //         //When a  User wants to see their order history
-    //         if (order_history.length < 1) {
-    //           socket.emit(
-    //             "bot-message",
-    //             "Wow Such empty\n\nSelect below to Order\n1: Bugger\n2: Pizzer\n3: Shawarmafried Rice\n4: fried-Rice\n5: Fried Rice\n\n 97: Current Order\n99: Checkout"
-    //           );
-    //           isPlacingOrder = true;
-    //           if (
-    //             message === "1" ||
-    //             message === "2" ||
-    //             message === "3" ||
-    //             message === "4" ||
-    //             message === "5" ||
-    //             message === "6" ||
-    //             message === "7" ||
-    //             message === "8" ||
-    //             message === "9"
-                
-    //           ) {
+  const option = parseInt(request);
 
-    //             //When a  User has selected an item to order
-    //             current_order.push(getItemName(message));
-    //             socket.emit(
-    //               "bot-message",
-    //               `${getItemName(message)} has been added to your order.\n
-    //     Do you want to add more items to your order?\n Select the options below\n1: Bugger\n2: Pizzer\n3: Shawarmafried Rice\n4: fried-Rice\n5: Fried Rice\n\n If not:\n 97: Current Order\n 98: Order History\n99: Checkout`
-    //             );
-    //           }
-    //         } else if (order_history.length > 0) {
-    //           isPlacingOrder = true;
-    //           let orderHistoryMessage = "";
-    //           const arr = [
-    //             "First",
-    //             "Second",
-    //             "Third",
-    //             "Fourth",
-    //             "Fifth",
-    //             "Seventh",
-    //             "Eight",
-    //             "Ninth",
-    //             "Tenth",
-    //           ];
-    //           for (let i = 0; i < order_history.length; i++) {
-    //             orderHistoryMessage +=
-    //               arr[i] + " Order: " + order_history[i].join(", ") + "\n";
-    //             socket.emit(
-    //               "bot-message",
-    //               `${orderHistoryMessage}\n\nSelect below to continue order\n1: Bugger\n2: Pizzer\n3: Shawarmafried Rice\n4: fried-Rice\n5: Fried Rice\n\n97: Current Order\n99: Checkout\n0: Cancel Order`
-    //             );
-    //           }
-    //         }
-    //       } else if (message === "97") {
-    //         if (current_order.length < 1) {
-    //           isPlacingOrder = true;
-    //           socket.emit(
-    //             "bot-message",
-    //             "No current order\nSelect below to place an order\n1: Bugger\n2: Pizzer\n3: Shawarmafried Rice\n4: fried-Rice\n5: Fried Rice\n\n98: Order History\n99: Checkout"
-    //           );
-    //         } else {
-    //           isPlacingOrder = true;
-    //           socket.emit(
-    //             "bot-message",
-    //             `Here is your current order: ${current_order.join(
-    //               ", "
-    //             )}\n98: Order History\n99: Checkout`
-    //           );
-    //         }
-    //       } else {
-    //         socket.emit(
-    //           "bot-message",
-    //           "Invalid input\nSelect\n 1: To Place an order\n97: Current Order\n98: to see order history"
-    //         );
-    //       }
-    //       inputField.value = "";
-    //     } else {
-    //       //If User is currently placing an order
-    //       if (
-    //         message === "1" ||
-    //         message === "2" ||
-    //         message === "3" ||
-    //         message === "4" ||
-    //         message === "5" ||
-    //         message === "6" ||
-    //         message === "7" ||
-    //         message === "8" ||
-    //         message === "9" 
-           
-    //       ) {
+  // const data = data || {};
+  if (data?.currentOrder && Array.isArray(data.currentOrder)) {
+    // There is an order in progress instead
+    const [handled, ...response] = addToOrder(request, data);
+    if (handled) {
+      return response;
+    }
+  }
 
-    //         //When a  User has selected an item to order
-    //         current_order.push(getItemName(message));
-    //         socket.emit(
-    //           "bot-message",
-    //           `${getItemName(message)} has been added to your order.\n
-    //     Do you want to add more items to your order?\n Select the options below\n1: Bugger\n2: Pizzer\n3: Shawarmafried Rice\n4: fried-Rice\n5: Fried Rice\n\n If not:\n 97: Current Order\n 98: Order History\n99: Checkout`
-    //         );
-    //       } else if (message === "99") {
+  switch (option) {
+    case 1:
+      return placeAnOrder(data);
+    case 99:
+      return checkOutOrder(data);
+    case 98:
+      return orderHistory(data);
+    case 97:
+      return getCurrentOrder(data);
+    case 0:
+      return cancelOrder(data);
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+          return addToOrder(request, data);
+    default:
+      return [data];
+  }
+};
 
-    //         // If a User wants to checkout
-    //         if (current_order.length < 1) {
-    //           socket.emit(
-    //             "bot-message",
-    //             "No order to place.\nSelect below to place an order\n1: Bugger\n2: Pizzer\n3: Shawarmafried Rice\n4: fried-Rice\n5: Fried Rice\n\n97: Current Order\n 98: Order History"
-    //           );
-    //         } else {
-    //           socket.emit(
-    //             "bot-message",
-    //             "Order placed.\n 1: Place new order\n 97: Current Order\n 98: Order History\n 0: Cancel Order"
-    //           );
-    //           let order = [];
-    //           order.push(current_order);
-    //           order_history.push(current_order);
-    //           current_order = [];
-    //         }
-    //       } else if (message === "97") {
-    //         if (current_order.length < 1) {
-    //           socket.emit(
-    //             "bot-message",
-    //             "No current order\nSelect below to place an order\n1: Bugger\n2: Pizzer\n3: Shawarmafried Rice\n4: fried-Rice\n5: Fried Rice\n\n 98: Order History\n99: Checkout"
-    //           );
-    //         } else {
-    //           socket.emit(
-    //             "bot-message",
-    //             `Here is your current order: ${current_order.join(
-    //               ", "
-    //             )}\n98: Order History\n99: Checkout\n0: Cancel Order`
-    //           );
-    //         }
-    //         //If a User wants to see their order history
-    //       } else if (message === "98") {
-    //         if (order_history.length < 1) {
-    //           socket.emit(
-    //             "bot-message",
-    //             "Wow Your Order is empty\n\nSelect below to place an order\n1: Bugger\n2: Pizzer\n3: Shawarmafried Rice\n4: fried-Rice\n5: Fried Rice\n\n97: Current Order\n99: Checkout"
-    //           );
-    //         } else if (order_history.length > 0) {
-    //           let orderHistoryMessage = "";
-    //           const arr = [
-    //             "First",
-    //             "Second",
-    //             "Third",
-    //             "Fourth",
-    //             "Fifth",
-    //             "Seventh",
-    //             "Eight",
-    //             "Ninth",
-    //             "Tenth",
-    //           ];
-    //           for (let i = 0; i < order_history.length; i++) {
-    //             orderHistoryMessage +=
-    //               arr[i] + " Order: " + order_history[i].join(", ") + "\n";
-    //             socket.emit(
-    //               "bot-message",
-    //               `${orderHistoryMessage}\n\nSelect below to continue order\n1: Bugger\n2: Pizzer\n3: Shawarmafried Rice\n4: Beef\n5: Fried Rice\n\n97: Current Order\n99: Checkout\n0: Cancel Order`
-    //             );
-    //           }
-    //         }
+const getMenu = (data) => {
+  let text = "";
+  for (const item of store) {
+    text += `${item.id}. ${item.name} - ${item.price} \n`;
+  }
+  return [text, data];
+};
 
-    //         //If User wants to cancel the order
-    //       } else if (message === "0") {
-    //         if (order_history.length < 1) {
-    //           socket.emit(
-    //             "bot-message",
-    //             "No order to cancel\nSelect below to place an order\n1: Bugger\n2: Pizzer\n3: Shawarmafried Rice\n4: fried-Rice\n5: Fried Rice\n\n 97: Current Order\n 98: Order History"
-    //           );
-    //         } else {
-    //           isPlacingOrder = false;
-    //           order_history.pop(order_history);
-    //           socket.emit(
-    //             "bot-message",
-    //             "Order cancelled.\n 1: Place an Order\n97: Current Order\n98: Order History"
-    //           );
-    //         }
-    //       } else {
-    //         socket.emit(
-    //           "bot-message",
-    //           "Invalid input\nSelect below to place an order\n1: Bugger\n2: Pizzer\n3: Shawarma\n4: fried-Rice\n5: Fried Rice\n\n97: Current Order\n 98: Order History\n 0: Cancel Order"
-    //         );
-    //       }
-    //       inputField.value = "";
-    //     }
+const placeAnOrder = (data) => {
+  // data.currentOrder = [];
+  // const menu = getMenu(data)[0]
+  // return ["Please select an item\n" + menu, data];
+  let response = "Please select an item by entering the item number:\n";
 
-    //     inputField.value = "";
-    //   }
+  store.forEach((item) => {
+    response += `${item.id}. ${item.name} - ₦${item.price}\n`;
+  });
+  return [response, { step: "selecting_item", order: [] }];
+};
 
-    //   function getItemName(itemNumber) {
-    //     switch (itemNumber) {
-    //       case "1":
-    //         return "Bugger";
-    //       case "2":
-    //         return "Pizzer";
-    //       case "3":
-    //         return "Shawarma";
-    //       case "4":
-    //         return "fried-Rice";
-    //       case "5":
-    //         return "Fired Rice";
-    //       case "6":
-    //         return "Jollof Rice";
-    //       case "7":
-    //         return "Beans";
-    //       case "8":
-    //         return "White Rice";
-    //       case "9":
-    //         return "Macaronni";
-    //     }
-    //   }
+// add new order
+const addToOrder = (request, data) => {
+  const item = store.find((item) => item.id === parseInt(request));
+  if (!item) {
+    return [false, "Invalid item", data];
+  }
 
-    //   socket.on("connect", () => {
-    //     appendMessage(
-    //       `Hello ${users}\nWelcome to Mafuz_tech_solutions restaurant Do you wants to order something.\nDo so By Selecting Options\n1: To Place an order\n97: Current Order\n 98: Order History`,
-    //       "bot"
-    //     );
-    //   });
+  if (!data.currentOrder) {
+    data.currentOrder = [];
+  }
 
-    //   // Handling receiving messages from the server
-    //   socket.on("bot-message", (message) => {
-    //     appendMessage(message, "bot");
-    //     chatMessage.save();
-    //   });
+  data.currentOrder.push(item);
 
-    //   // Attaching event listeners
-    //   sendButton.addEventListener("click", sendMessage);
-    //   inputField.addEventListener("keydown", (event) => {
-    //     if (event.key === "Enter") {
-    //       sendMessage();
-    //     }
-    //   });
-    
+  return ["Item added to order", data];
+};
+
+// checkout order
+const checkOutOrder = (data) => {
+  if (!data.currentOrder || !data.currentOrder.length) {
+    return ["No order in progress", data];
+  }
+
+  let text = "Your order is: \n";
+  let total = 0;
+  for (const item of data.currentOrder) {
+    text += `${item.name} - ${item.price} \n`;
+    total += item.price;
+  }
+  text += `Total: ${total}`;
+  
+  // clear currentOrder property
+  data.currentOrder = [];
+
+  return [text, data];
+};
+
+
+// cancel the order
+const cancelOrder = (data) => {
+  if (!data.order || !data.order.length) {
+    return ["No order to cancel", data];
+  }
+
+  data.order = [];
+  data.step = "start";
+  return ["Order cancelled", data];
+};
+
+function orderHistory(data) {
+  if (!data.orders || data.orders.length === 0) {
+    return ["No orders have been placed yet.", data];
+  } else {
+    let response = "Here is a list of all placed orders:\n";
+    data.orders.forEach((order, index) => {
+      response += `${index + 1}. `;
+      order.forEach((item) => {
+        response += `${item.name} - ${item.price}, `;
+      });
+      response = response.slice(0, -2); // remove the trailing comma and space
+      response += "\n";
+    });
+    return [response, data];
+  }
+}
+
+
+function getCurrentOrder(data) {
+  if (!data.orders || data.orders.length === 0) {
+    return ["No orders have been placed yet.", data];
+  } else {
+    const lastOrder = data.orders[data.orders.length - 1];
+    let order = `Your current order (placed on ${lastOrder.date}): \n`;
+    let total = 0;
+
+    for (const item of lastOrder.items) {
+      order += `${item.name} - ${item.price} \n`;
+      total += item.price;
+    }
+    order += `Total: ${total}`;
+    return [order, data];
+  }
+}

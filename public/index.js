@@ -1,3 +1,16 @@
+console.log("Seeing index.js")
+
+const socket = io();
+
+socket.on("connect", () => {
+	console.log("Connected to server");
+});
+
+socket.on("response", (reply) => {
+	console.log("Response from server", reply);
+	botReply(reply)
+})
+
 // MESSAGE INPUT
 const textarea = document.querySelector('.chatbox-message-input')
 const chatboxForm = document.querySelector('.chatbox-message-form')
@@ -5,11 +18,11 @@ const chatboxForm = document.querySelector('.chatbox-message-form')
 textarea.addEventListener('input', function () {
 	let line = textarea.value.split('\n').length
 
-	if(textarea.rows < 6 || line < 6) {
+	if (textarea.rows < 6 || line < 6) {
 		textarea.rows = line
 	}
 
-	if(textarea.rows > 1) {
+	if (textarea.rows > 1) {
 		chatboxForm.style.alignItems = 'flex-end'
 	} else {
 		chatboxForm.style.alignItems = 'center'
@@ -37,7 +50,7 @@ dropdownToggle.addEventListener('click', function () {
 })
 
 document.addEventListener('click', function (e) {
-	if(!e.target.matches('.chatbox-message-dropdown, .chatbox-message-dropdown *')) {
+	if (!e.target.matches('.chatbox-message-dropdown, .chatbox-message-dropdown *')) {
 		dropdownMenu.classList.remove('show')
 	}
 })
@@ -55,25 +68,24 @@ const chatboxNoMessage = document.querySelector('.chatbox-message-no-message')
 chatboxForm.addEventListener('submit', function (e) {
 	e.preventDefault()
 
-	if(isValid(textarea.value)) {
+	if (isValid(textarea.value)) {
+		socket.emit("request", textarea.value)
 		writeMessage()
-		setTimeout(autoReply, 1000)
+		// setTimeout(autoReply, 1000)
 	}
 })
 
 
 
 function addZero(num) {
-	return num < 10 ? '0'+num : num
+	return num < 10 ? '0' + num : num
 }
 
 function writeMessage() {
 	const today = new Date()
 	let message = `
 		<div class="chatbox-message-item sent">
-			<span class="chatbox-message-item-text">
-				${textarea.value.trim().replace(/\n/g, '<br>\n')}
-			</span>
+			<pre class="chatbox-message-item-text">${textarea.value.trim().replace(/\n/g, '<br>\n')}</pre>
 			<span class="chatbox-message-item-time">${addZero(today.getHours())}:${addZero(today.getMinutes())}</span>
 		</div>
 	`
@@ -100,6 +112,18 @@ function autoReply() {
 	scrollBottom()
 }
 
+function botReply(reply) {
+	const today = new Date()
+	let message = `
+		<div class="chatbox-message-item received">
+			<pre class="chatbox-message-item-text">${reply}</pre>
+			<span class="chatbox-message-item-time">${addZero(today.getHours())}:${addZero(today.getMinutes())}</span>
+		</div>
+	`
+	chatboxMessageWrapper.insertAdjacentHTML('beforeend', message)
+	scrollBottom()
+}
+
 function scrollBottom() {
 	chatboxMessageWrapper.scrollTo(0, chatboxMessageWrapper.scrollHeight)
 }
@@ -110,3 +134,10 @@ function isValid(value) {
 
 	return text.length > 0
 }
+
+textarea.addEventListener("click", sendMessage)
+chatboxForm.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+	sendMessage();
+  }
+});
